@@ -1,8 +1,16 @@
 ---
 import { getFeaturedPosters, getSetting } from '../lib/db';
 
-const sectionVisible = await getSetting('featured_posters_visible');
-const posters = sectionVisible !== false ? await getFeaturedPosters() : [];
+let sectionVisible: unknown = false;
+let posters: Awaited<ReturnType<typeof getFeaturedPosters>> = [];
+try {
+  sectionVisible = await getSetting('featured_posters_visible');
+  posters = sectionVisible !== false ? await getFeaturedPosters() : [];
+} catch (error) {
+  console.error('Failed to load featured posters:', error);
+  sectionVisible = false;
+  posters = [];
+}
 const showSection = sectionVisible !== false && posters.length > 0;
 ---
 

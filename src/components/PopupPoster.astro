@@ -1,7 +1,12 @@
 ---
 import { getActivePopup } from '../lib/db';
 
-const popup = await getActivePopup();
+let popup: Awaited<ReturnType<typeof getActivePopup>> = null;
+try {
+  popup = await getActivePopup();
+} catch (error) {
+  console.error('Failed to load popup:', error);
+}
 ---
 
 {popup && (

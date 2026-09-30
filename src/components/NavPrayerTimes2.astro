@@ -110,6 +110,11 @@ const structuredData = prayerTimesForCurrentDay ? {
   role="region"
   aria-label="Today's Prayer Times"
 >
+  {prayerTimesForCurrentDay.isFallback && (
+    <p class="text-center text-[11px] md:text-xs text-terracottaRed-darker bg-softBeige px-2 py-1">
+      Showing standard timetable — iqamah times may differ. Please confirm at the masjid.
+    </p>
+  )}
   <!-- Mobile View -->
   <div class="md:hidden">
     <!-- 5 Daily Prayers -->

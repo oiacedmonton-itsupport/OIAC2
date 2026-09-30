@@ -50,12 +50,13 @@ export const currentYear = today.getFullYear()
 
 
 
+// Computed per call: module-level values go stale on a warm serverless instance
 export const getMonthName = () => {
-    return month[today.getMonth()]
+    return month[getCurrentDateInEdmonton().getMonth()]
 }
 
 export const getMonthShortName = () => {
-    return monthShort[today.getMonth()]
+    return monthShort[getCurrentDateInEdmonton().getMonth()]
 }
 
 export const getWeekday = (date:Date) => {
@@ -63,7 +64,8 @@ export const getWeekday = (date:Date) => {
 }
 
 export const getWeekdayByDay = (day: number) => {
-    const dateToProcess = new Date(currentYear, currentMonth, day)
+    const now = getCurrentDateInEdmonton()
+    const dateToProcess = new Date(now.getFullYear(), now.getMonth(), day)
     return getWeekday(dateToProcess)
 }
  

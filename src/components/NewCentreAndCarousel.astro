@@ -60,7 +60,12 @@ function getVideoType(url: string): 'youtube' | 'streamable' | 'other' {
 
 const { heroTemplate } = Astro.props;
 
-const posters: Array<PosterRecord> = await getPosters();
+let posters: Array<PosterRecord> = [];
+try {
+  posters = await getPosters();
+} catch (error) {
+  console.error('Failed to load posters:', error);
+}
 ---
 
 <div class="px-4 p-2 md:px-8 md:py-2 mx-auto">

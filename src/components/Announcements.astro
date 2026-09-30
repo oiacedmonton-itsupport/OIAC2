@@ -1,7 +1,12 @@
 ---
 import { getActiveAnnouncement } from '../lib/db';
 
-const event = await getActiveAnnouncement();
+let event: Awaited<ReturnType<typeof getActiveAnnouncement>> = null;
+try {
+  event = await getActiveAnnouncement();
+} catch (error) {
+  console.error('Failed to load announcement:', error);
+}
 
 let formattedDate = '';
 if (event?.eventDate) {

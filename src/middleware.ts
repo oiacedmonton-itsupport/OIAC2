@@ -35,6 +35,39 @@ function verifySessionToken(token: string, password: string): boolean {
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
+  // CMS API: writes (and private listings) require an admin session.
+  // Public GETs stay open for read-only consumers.
+  const normalizedPath = pathname.replace(/\/{2,}/g, '/').toLowerCase();
+  if (normalizedPath.startsWith('/api/cms/')) {
+    const isPrivateRead = normalizedPath.startsWith('/api/cms/media') || normalizedPath.startsWith('/api/cms/feedback');
+    const isRead = context.request.method === 'GET' || context.request.method === 'HEAD';
+    if (isRead && !isPrivateRead) {
+      return next();
+    }
+
+    const adminPassword = import.meta.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
+    if (!adminPassword) {
+      // Never leave service-role writes open on a deployed build that is missing the password
+      if (import.meta.env.PROD) {
+        return new Response(JSON.stringify({ error: 'Admin password not configured' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return next();
+    }
+
+    const sessionCookie = context.cookies.get(ADMIN_COOKIE_NAME);
+    if (sessionCookie && verifySessionToken(sessionCookie.value, adminPassword)) {
+      return next();
+    }
+
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // Only protect /admin routes (except login page and API)
   if (!pathname.startsWith('/admin')) {
     return next();

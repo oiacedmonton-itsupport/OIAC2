@@ -14,7 +14,10 @@ const [address, phone, email, mapsUrl, facebookUrl, instagramUrl, youtubeUrl, co
   getSetting('contact_instagram_url'),
   getSetting('contact_youtube_url'),
   getSetting('contact_image_url'),
-]);
+]).catch((error) => {
+  console.error('Failed to load contact settings:', error);
+  return [] as unknown[];
+});
 
 const contactAddress = (address as string) || '110 - 1011 Parsons Rd SW, Edmonton , AB T6X 0X2';
 const contactPhone = (phone as string) || '(587) 882-3202';

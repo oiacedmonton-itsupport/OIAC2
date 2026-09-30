@@ -1,5 +1,10 @@
 import { getJummahTimesFromDB, getPrayerTimeByDay, getPrayerTimesByMonth } from '../db';
 
+// 2026 timetable the DB was seeded from (see api/cms/seed-prayer-times.ts); bundled so it works when the DB is down
+const fallbackPrayerTimes = Object.values(
+  import.meta.glob<Omit<PrayerTime, 'id' | 'isFallback'>>('../../content/prayer-times/*.json', { eager: true, import: 'default' })
+);
+
 export type PrayerTime = {
   id: string;
   month: number;
@@ -15,6 +20,8 @@ export type PrayerTime = {
   maghribJamah: string;
   ishaBegins: string;
   ishaJamah: string;
+  // True when the DB was unreachable and times came from the bundled src/content/prayer-times snapshot
+  isFallback?: boolean;
 };
 
 export type JummahTime = {
@@ -22,17 +29,24 @@ export type JummahTime = {
   time: string;
 };
 
-export async function getPrayerTimesForCurrentDay(): Promise<PrayerTime | undefined> {
-  try {
-    // Use Edmonton's local timezone to get the correct date.
-    // The server runs in UTC, so using `new Date()` directly would return
-    // the wrong date for Edmonton users after ~5–7pm MST/MDT.
-    const now = new Date();
-    const edmontonDateStr = now.toLocaleDateString('en-CA', { timeZone: 'America/Edmonton' }); // "YYYY-MM-DD"
-    const [, monthStr, dayStr] = edmontonDateStr.split('-');
-    const month = parseInt(monthStr, 10);
-    const day = parseInt(dayStr, 10);
+// The server runs in UTC, so using `new Date()` directly would return
+// the wrong date for Edmonton users after ~5–7pm MST/MDT.
+function getEdmontonMonthAndDay(): { month: number; day: number } {
+  const edmontonDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Edmonton' }); // "YYYY-MM-DD"
+  const [, monthStr, dayStr] = edmontonDateStr.split('-');
+  return { month: parseInt(monthStr, 10), day: parseInt(dayStr, 10) };
+}
 
+function getFallbackPrayerTimes(month: number, day?: number): PrayerTime[] {
+  return fallbackPrayerTimes
+    .filter(pt => pt.month === month && (day === undefined || pt.day === day))
+    .sort((a, b) => a.day - b.day)
+    .map(pt => ({ ...pt, id: `fallback-${pt.month}-${pt.day}`, isFallback: true }));
+}
+
+export async function getPrayerTimesForCurrentDay(): Promise<PrayerTime | undefined> {
+  const { month, day } = getEdmontonMonthAndDay();
+  try {
     const record = await getPrayerTimeByDay(month, day);
     if (!record) return undefined;
 
@@ -54,14 +68,13 @@ export async function getPrayerTimesForCurrentDay(): Promise<PrayerTime | undefi
     };
   } catch (error) {
     console.error('Error fetching prayer times for current day:', error);
-    return undefined;
+    return getFallbackPrayerTimes(month, day)[0];
   }
 }
 
 export async function getPrayerTimesForCurrentMonth(): Promise<PrayerTime[]> {
+  const { month } = getEdmontonMonthAndDay();
   try {
-    const now = new Date();
-    const month = now.getMonth() + 1;
 
     const records = await getPrayerTimesByMonth(month);
 
@@ -83,7 +96,7 @@ export async function getPrayerTimesForCurrentMonth(): Promise<PrayerTime[]> {
     })).sort((a, b) => a.day - b.day);
   } catch (error) {
     console.error('Error fetching prayer times for current month:', error);
-    return [];
+    return getFallbackPrayerTimes(month);
   }
 }
 

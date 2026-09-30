@@ -1,9 +1,14 @@
 ---
 import OIACLayout from "../layouts/oiac-layout.astro"
 import {getPrayerTimesForCurrentMonth, type PrayerTime} from '../lib/content/prayer-times'
-import { getMonthShortName, getHijriDateAsString, getHijriShortDateAsString, getCurrentDateInEdmontonAsString, getWeekday, getWeekdayByDay, currentDay, currentMonth, currentYear, getMonthName } from "../helper"
+import { getMonthShortName, getHijriDateAsString, getHijriShortDateAsString, getCurrentDateInEdmontonAsString, getWeekday, getWeekdayByDay, getCurrentDateInEdmonton, getMonthName } from "../helper"
 
 const prayerTimesForCurrentMonth : Array<PrayerTime> = await getPrayerTimesForCurrentMonth()
+const edmontonToday = getCurrentDateInEdmonton()
+const currentDay = edmontonToday.getDate()
+const currentMonth = edmontonToday.getMonth()
+const currentYear = edmontonToday.getFullYear()
+const isFallback = prayerTimesForCurrentMonth[0]?.isFallback === true
 const currentMonthNameShort = getMonthShortName()
 const getClassByDay = (day: number) => {
     return day === currentDay ? "bg-lightWood" : ""
@@ -16,6 +21,11 @@ const getClassByDay = (day: number) => {
     <h1 class="text-2xl md:text-4xl font-black my-5 md:text-terracottaRed-darker">{getMonthName} Prayer Times</h1>
             <h6 class="text-lg text-terracottaRed">{getCurrentDateInEdmontonAsString}</h6>
             <h6 class="text-lg text-terracottaRed">{getHijriDateAsString}</h6>
+            {isFallback && (
+                <p class="text-sm text-terracottaRed-darker bg-softBeige px-3 py-2 rounded mt-2">
+                    Showing standard timetable — iqamah times may differ. Please confirm at the masjid.
+                </p>
+            )}
     <div class="bg-terracottaRed-darker font-bold text-white text-center text-sm md:text-lg z-10 w-full grid grid-cols-6 mt-2">
         <div class="py-5 border-r border-softBeige">
             <h4>Date</h4>
