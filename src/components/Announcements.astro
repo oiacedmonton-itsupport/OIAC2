@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getActiveAnnouncement } from '../lib/db';
 
 let event: Awaited<ReturnType<typeof getActiveAnnouncement>> = null;
@@ -23,7 +24,7 @@ if (event?.eventDate) {
       {/* Blurred poster background overlay */}
       {event.posterImageUrl && (
       <div class="absolute inset-0">
-        <img src={event.posterImageUrl} alt="" class="w-full h-full object-cover scale-110 blur-xl" loading="eager" />
+        <img src={mediaUrl(event.posterImageUrl)} alt="" class="w-full h-full object-cover scale-110 blur-xl" loading="eager" />
         <div class="absolute inset-0 bg-deepTeal/65"></div>
       </div>
       )}
@@ -37,7 +38,7 @@ if (event?.eventDate) {
         {event.posterImageUrl && (
         <div class="flex-shrink-0">
           <img
-            src={event.posterImageUrl}
+            src={mediaUrl(event.posterImageUrl)}
             alt={event.title}
             class="w-36 h-48 md:w-40 md:h-52 object-cover rounded-xl shadow-md border border-white/15"
           />

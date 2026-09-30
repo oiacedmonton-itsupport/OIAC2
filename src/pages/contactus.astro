@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import OIACLayout from "../layouts/oiac-layout.astro";
 import VolunteerComponent from "../components/Volunteer.astro";
 import NewsletterComponent from "../components/Newsletter2.astro";
@@ -94,7 +95,7 @@ const contactImage = (contactImageUrl as string) || '';
         </div>
       </div>
       <div class="mb-5">
-        <img src={contactImage || OIACFrontImage.src} alt="OIAC" class="rounded-xl" />
+        <img src={mediaUrl(contactImage) || OIACFrontImage.src} alt="OIAC" class="rounded-xl" />
       </div>
       <VolunteerComponent />
       <NewsletterComponent />

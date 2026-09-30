@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getSlideshowItems } from '../lib/db';
 
 let videos: Array<{
@@ -98,7 +99,7 @@ const featuredVideo = videos.find(v => v.featured);
                         <div class="video-thumbnail">
                             {video.thumbnail && (
                                 <img
-                                    src={video.thumbnail}
+                                    src={mediaUrl(video.thumbnail)}
                                     alt={video.title}
                                     loading="lazy"
                                     class="transition-transform duration-300 group-hover:scale-105"

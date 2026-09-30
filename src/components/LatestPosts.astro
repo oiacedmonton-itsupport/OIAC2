@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getPosters, type PosterRecord } from "../lib/db";
 
 let posters: Array<PosterRecord> = [];
@@ -19,14 +20,14 @@ try {
             {poster.linkUrl ? (
               <a href={poster.linkUrl} target="_blank" rel="noopener noreferrer">
                 <img
-                  src={poster.imageUrl}
+                  src={mediaUrl(poster.imageUrl)}
                   alt={poster.title}
                   class="rounded-lg w-full"
                 />
               </a>
             ) : (
               <img
-                src={poster.imageUrl}
+                src={mediaUrl(poster.imageUrl)}
                 alt={poster.title}
                 class="rounded-lg w-full"
               />

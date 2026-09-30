@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getActivePopup } from '../lib/db';
 
 let popup: Awaited<ReturnType<typeof getActivePopup>> = null;
@@ -30,7 +31,7 @@ try {
 <div id="popup" data-popup-id={popup.id} class="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8 hidden z-50">
   <div class="relative bg-white rounded-2xl shadow-2xl overflow-hidden max-w-lg w-full popup-card-animate">
     <button id="closeBtn" class="absolute top-3 right-3 z-10 w-9 h-9 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/80 text-white text-xl transition-colors" aria-label="Close popup">&times;</button>
-    <img src={popup.imageUrl} alt={popup.title} class="block w-full h-auto object-contain" loading="eager" />
+    <img src={mediaUrl(popup.imageUrl)} alt={popup.title} class="block w-full h-auto object-contain" loading="lazy" />
     {popup.linkUrl && (
     <div class="p-4 text-center">
       <a href={popup.linkUrl} target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-2.5 bg-terracottaRed-600 hover:bg-terracottaRed-700 text-white font-semibold rounded-lg transition-colors text-sm">

@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import OIACLayout from "../layouts/oiac-layout.astro";
 import interacLogo from "../assets/Interac.Logo1.png";
 import InfiniteCarousel from "../components/InfiniteCarousel.astro";
@@ -105,7 +106,7 @@ function formatDate(dateString: string): string {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {update.images.map((image) => (
                   <img
-                    src={image.url}
+                    src={mediaUrl(image.url)}
                     alt={update.title}
                     class="rounded-xl w-full h-auto object-cover"
                   />

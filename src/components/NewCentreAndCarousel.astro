@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getPosters, type PosterRecord, type HeroTemplateRecord } from "../lib/db";
 import interacLogo from "../assets/Interac.Logo1.png";
 import PostersCarousel from "./PostersCarousel.astro";
@@ -88,7 +89,7 @@ try {
             style={heroTemplate 
               ? heroTemplate.backgroundType === 'color' 
                 ? `background: ${heroTemplate.backgroundColor};`
-                : `background-image: url('${heroTemplate.backgroundImageUrl}'); background-size: cover; background-position: center; background-attachment: fixed;`
+                : `background-image: url('${mediaUrl(heroTemplate.backgroundImageUrl)}'); background-size: cover; background-position: center; background-attachment: fixed;`
               : 'background: linear-gradient(to bottom right, #8B2E0C, #C84C3C);'
             }
           >

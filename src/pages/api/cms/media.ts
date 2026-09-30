@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
       .from(BUCKET_NAME)
       .upload(fileName, buffer, {
         contentType: file.type,
-        cacheControl: '3600',
+        cacheControl: '31536000',
         upsert: false
       });
 

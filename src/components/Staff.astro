@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import { getStaffMembers, type Staff } from "../lib/content/staff";
 import defaultProfilePicture from "../assets/blank-profile-picture.png";
 const staffMembers: Array<Staff> = await getStaffMembers();
@@ -97,7 +98,7 @@ const groupedStaff =
                   <div class="flex-shrink-0 w-48 transition-transform duration-300 group-hover:scale-105">
                     <img
                       src={
-                        staff.profilePicture?.url || defaultProfilePicture.src
+                        mediaUrl(staff.profilePicture?.url) || defaultProfilePicture.src
                       }
                       alt={
                         staff.name

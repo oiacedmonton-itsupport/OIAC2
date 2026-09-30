@@ -1,4 +1,5 @@
 ---
+import { mediaUrl } from "../lib/media-url";
 import type { PosterRecord } from "../lib/db";
 
 interface Props {
@@ -30,7 +31,7 @@ const { posters, autoPlayInterval = 5000 } = Astro.props;
         aria-hidden={i === 0 ? undefined : "true"}
       >
         <img
-          src={poster.imageUrl}
+          src={mediaUrl(poster.imageUrl)}
           alt={poster.title}
           class="w-full h-full object-cover object-center"
           loading={i === 0 ? "eager" : "lazy"}
