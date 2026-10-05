@@ -8,8 +8,12 @@ const month = ["January","February","March","April","May","June","July","August"
 const monthShort = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+// Alberta is on permanent UTC-6 (Official Time Act, June 2026). Etc zone signs are inverted:
+// Etc/GMT+6 = UTC-6. Don't use America/Edmonton; server tzdata may still switch to MST in November.
+export const EDMONTON_TIME_ZONE = 'Etc/GMT+6';
+
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
-    timeZone: 'America/Edmonton',
+    timeZone: EDMONTON_TIME_ZONE,
     weekday: "long",
     year: "numeric",
 month: 'long',
@@ -20,7 +24,7 @@ second: '2-digit',
 };
 
 const dateOnlyOptions: Intl.DateTimeFormatOptions = {
-    timeZone: 'America/Edmonton',
+    timeZone: EDMONTON_TIME_ZONE,
     weekday: "long",
     year: "numeric",
 month: 'long',
@@ -28,7 +32,7 @@ day: '2-digit',
 };
 
 // Get the current date and time in Edmonton, Canada
-// Note: The time zone offset for Edmonton is -06:00 (Mountain Daylight Time - MDT)
+// Note: The time zone offset for Edmonton is a fixed -06:00
 
 export const getCurrentDateInEdmonton = () => {
     const edmontonDateTime = new Date().toLocaleString('en-US', dateOnlyOptions);

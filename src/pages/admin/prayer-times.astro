@@ -1,29 +1,101 @@
 ---
 import AdminLayout2 from '../../layouts/AdminLayout2.astro';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const inputClass = 'px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
 ---
 
 <AdminLayout2 title="Prayer Times" currentPage="prayer-times">
   <AdminPageHeader title="Prayer Times" description="Manage daily prayer times for the entire year">
-    <button id="saveAllBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-      Save Month
+    <button id="discardBtn" type="button" class="hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+      Discard
+    </button>
+    <button id="saveAllBtn" type="button" disabled class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed">
+      No changes
     </button>
   </AdminPageHeader>
 
+  <!-- Quick update (bulk iqamah change over a date range) -->
+  <details id="quickPanel" class="group bg-white rounded-lg border border-gray-200 mb-6">
+    <summary class="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+      <div>
+        <span class="text-sm font-semibold text-gray-900">Quick update iqamah times</span>
+        <span class="block text-xs text-gray-500">Set one prayer's Jamah time across a range of dates, then preview before saving.</span>
+      </div>
+      <svg class="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"></path></svg>
+    </summary>
+
+    <div class="border-t border-gray-200 px-4 py-4">
+      <div class="grid grid-cols-1 md:grid-cols-[auto_auto_auto] gap-4 items-start">
+        <div>
+          <label for="quPrayer" class="block text-xs font-medium text-gray-700 mb-1">Prayer (Jamah)</label>
+          <select id="quPrayer" class={inputClass}>
+            <option value="fajr">Fajr</option>
+            <option value="zuhr">Zuhr</option>
+            <option value="asr">Asr</option>
+            <option value="maghrib">Maghrib</option>
+            <option value="isha">Isha</option>
+          </select>
+        </div>
+
+        <div>
+          <span class="block text-xs font-medium text-gray-700 mb-1">From</span>
+          <div class="flex gap-2">
+            <select id="quFromMonth" aria-label="From month" class={inputClass}>
+              {MONTHS.map((m, i) => <option value={i + 1}>{m}</option>)}
+            </select>
+            <select id="quFromDay" aria-label="From day" class={inputClass}></select>
+          </div>
+        </div>
+
+        <div>
+          <span class="block text-xs font-medium text-gray-700 mb-1">To (inclusive)</span>
+          <div class="flex gap-2">
+            <select id="quToMonth" aria-label="To month" class={inputClass}>
+              {MONTHS.map((m, i) => <option value={i + 1}>{m}</option>)}
+            </select>
+            <select id="quToDay" aria-label="To day" class={inputClass}></select>
+          </div>
+        </div>
+      </div>
+
+      <p id="quRangeHint" class="mt-2 text-xs text-gray-500"></p>
+
+      <fieldset class="mt-4">
+        <legend class="block text-xs font-medium text-gray-700 mb-2">New Jamah time</legend>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input type="radio" name="quMode" value="fixed" checked class="text-blue-600 focus:ring-blue-500" />
+            Fixed time
+            <input id="quTime" type="time" class={inputClass} />
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input type="radio" name="quMode" value="offset" class="text-blue-600 focus:ring-blue-500" />
+            <input id="quMinutes" type="number" min="0" max="180" step="1" value="10" class={`${inputClass} w-20`} />
+            minutes after that day's start time
+          </label>
+        </div>
+      </fieldset>
+
+      <p id="quError" class="hidden mt-3 text-sm text-red-600"></p>
+
+      <div class="mt-4 flex gap-3">
+        <button id="quPreviewBtn" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+          Preview changes
+        </button>
+      </div>
+
+      <!-- Preview -->
+      <div id="quPreview" class="hidden mt-5 border-t border-gray-200 pt-4"></div>
+    </div>
+  </details>
+
   <!-- Month Selector -->
   <div class="flex gap-1 mb-6 flex-wrap">
-    <button data-month="1" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 transition-colors">Jan</button>
-    <button data-month="2" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Feb</button>
-    <button data-month="3" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Mar</button>
-    <button data-month="4" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Apr</button>
-    <button data-month="5" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">May</button>
-    <button data-month="6" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Jun</button>
-    <button data-month="7" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Jul</button>
-    <button data-month="8" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Aug</button>
-    <button data-month="9" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Sep</button>
-    <button data-month="10" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Oct</button>
-    <button data-month="11" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Nov</button>
-    <button data-month="12" class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Dec</button>
+    {MONTHS.map((m, i) => (
+      <button type="button" data-month={i + 1} class="month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">{m}</button>
+    ))}
   </div>
 
   <!-- Prayer Times Table -->
@@ -34,14 +106,157 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
   </div>
 
   <script is:inline>
-    const API_URL = '/api/cms/prayer-times';
-    let currentMonth = 1;
-    let items = [];
-    let editedRows = {};
+    // ---- PURE LOGIC START (no DOM access; unit-testable) ----
+    const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const MONTH_SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const TIME_KEYS = ['fajrBegins', 'fajrJamah', 'sunrise', 'zuhrBegins', 'zuhrJamah', 'asrBegins', 'asrJamah',
+      'maghribBegins', 'maghribJamah', 'ishaBegins', 'ishaJamah'];
+    const QUICK_PRAYERS = ['fajr', 'zuhr', 'asr', 'maghrib', 'isha'];
 
+    function pad2(n) { return String(n).padStart(2, '0'); }
+
+    /** "05:42 AM" -> minutes since midnight (342), or null if unreadable. */
+    function parseTime(str) {
+      if (typeof str !== 'string') return null;
+      const m = str.trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp])\.?\s*[Mm]\.?$/);
+      if (!m) return null;
+      let h = Number(m[1]);
+      const min = Number(m[2]);
+      if (h < 1 || h > 12 || min > 59) return null;
+      if (h === 12) h = 0;
+      return (m[3].toUpperCase() === 'P' ? h + 12 : h) * 60 + min;
+    }
+
+    /** minutes since midnight -> "hh:mm AM" (wraps around midnight). */
+    function formatTime(total) {
+      const t = ((Math.round(total) % 1440) + 1440) % 1440;
+      const h24 = Math.floor(t / 60);
+      const min = t % 60;
+      const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+      return pad2(h12) + ':' + pad2(min) + ' ' + (h24 < 12 ? 'AM' : 'PM');
+    }
+
+    /** <input type="time"> value "13:05" -> "01:05 PM", or null. */
+    function timeInputToDisplay(value) {
+      const m = String(value || '').match(/^(\d{1,2}):(\d{2})/);
+      if (!m) return null;
+      const h = Number(m[1]), min = Number(m[2]);
+      if (h > 23 || min > 59) return null;
+      return formatTime(h * 60 + min);
+    }
+
+    /** "11:50 PM" + 20 -> "12:10 AM"; null if the time is unreadable. */
+    function addMinutesToTime(str, minutes) {
+      const t = parseTime(str);
+      return t === null ? null : formatTime(t + minutes);
+    }
+
+    function isValidMonthDay(month, day) {
+      return Number.isInteger(month) && month >= 1 && month <= 12 &&
+        Number.isInteger(day) && day >= 1 && day <= DAYS_IN_MONTH[month];
+    }
+
+    function dayOfYear(month, day) {
+      let n = day;
+      for (let m = 1; m < month; m++) n += DAYS_IN_MONTH[m];
+      return n;
+    }
+
+    /** Inclusive list of {month, day}; wraps over Dec 31 -> Jan 1 when `to` is before `from`. */
+    function expandDateRange(from, to) {
+      if (!isValidMonthDay(from.month, from.day) || !isValidMonthDay(to.month, to.day)) return [];
+      const out = [];
+      let month = from.month, day = from.day;
+      for (let i = 0; i < 365; i++) {
+        out.push({ month, day });
+        if (month === to.month && day === to.day) break;
+        day++;
+        if (day > DAYS_IN_MONTH[month]) { day = 1; month = month === 12 ? 1 : month + 1; }
+      }
+      return out;
+    }
+
+    function wrapsYearEnd(from, to) {
+      return dayOfYear(to.month, to.day) < dayOfYear(from.month, from.day);
+    }
+
+    /** Returns an error message, or null when the options are valid. */
+    function validateQuickUpdate(opts) {
+      if (!QUICK_PRAYERS.includes(opts.prayer)) return 'Choose a prayer.';
+      if (!opts.from || !isValidMonthDay(opts.from.month, opts.from.day)) return 'Choose a valid "From" date.';
+      if (!opts.to || !isValidMonthDay(opts.to.month, opts.to.day)) return 'Choose a valid "To" date.';
+      if (opts.mode === 'fixed') {
+        if (!opts.time || parseTime(opts.time) === null) return 'Enter the new Jamah time.';
+      } else if (opts.mode === 'offset') {
+        const n = opts.minutes;
+        if (!Number.isInteger(n) || n < 0 || n > 180) return 'Minutes must be a whole number from 0 to 180.';
+      } else {
+        return 'Choose how to set the new time.';
+      }
+      return null;
+    }
+
+    /** Copy of a record containing month, day and ALL 11 time fields (bulk upsert overwrites every field). */
+    function buildFullRecord(rec, overrides) {
+      const out = { month: Number(rec.month), day: Number(rec.day) };
+      TIME_KEYS.forEach(k => { out[k] = rec[k] ?? null; });
+      return Object.assign(out, overrides || {});
+    }
+
+    /**
+     * Compute the effect of a quick update against all records.
+     * Returns { dates, changes, missing, unreadable, unchangedCount }.
+     * changes[i] = { month, day, begins, oldValue, newValue, warning, record } where record is the full record to upsert.
+     */
+    function computeQuickUpdate(records, opts) {
+      const jamahKey = opts.prayer + 'Jamah';
+      const beginsKey = opts.prayer + 'Begins';
+      const byKey = {};
+      (records || []).forEach(r => { byKey[Number(r.month) + '-' + Number(r.day)] = r; });
+
+      const dates = expandDateRange(opts.from, opts.to);
+      const changes = [], missing = [], unreadable = [];
+      let unchangedCount = 0;
+
+      dates.forEach(({ month, day }) => {
+        const rec = byKey[month + '-' + day];
+        if (!rec) { missing.push({ month, day }); return; }
+
+        const begins = rec[beginsKey] ?? '';
+        const beginsMin = parseTime(begins);
+        let newValue;
+        if (opts.mode === 'fixed') {
+          newValue = opts.time;
+        } else {
+          if (beginsMin === null) { unreadable.push({ month, day, begins }); return; }
+          newValue = formatTime(beginsMin + opts.minutes);
+        }
+
+        const oldValue = rec[jamahKey] ?? '';
+        if (String(oldValue).trim() === newValue) { unchangedCount++; return; }
+
+        let warning = null;
+        if (opts.mode === 'offset' && beginsMin + opts.minutes >= 1440) {
+          warning = 'Goes past midnight';
+        } else if (beginsMin !== null && parseTime(newValue) < beginsMin) {
+          warning = 'Earlier than start time (' + begins + ')';
+        }
+
+        changes.push({
+          month, day, begins, oldValue, newValue, warning,
+          record: buildFullRecord(rec, { [jamahKey]: newValue }),
+        });
+      });
+
+      return { dates, changes, missing, unreadable, unchangedCount };
+    }
+
+    function formatMonthDay(d) { return MONTH_SHORT[d.month] + ' ' + d.day; }
+    // ---- PURE LOGIC END ----
+
+    const API_URL = '/api/cms/prayer-times';
     const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'];
-    const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     const PRAYER_FIELDS = [
       { key: 'fajrBegins', label: 'Fajr' },
@@ -57,35 +272,112 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
       { key: 'ishaJamah', label: 'I.Jam' },
     ];
 
+    // Alberta is on permanent UTC-6 (see EDMONTON_TIME_ZONE in src/helper.ts); browser tzdata may still switch to MST
+    const [, TODAY_M, TODAY_D] = new Date().toLocaleDateString('en-CA', { timeZone: 'Etc/GMT+6' }).split('-').map(Number);
+    const TODAY = { month: TODAY_M, day: TODAY_D };
+
+    let currentMonth = TODAY.month;
+    let items = [];
+    let originals = {};   // day -> { field: value as rendered }
+    let editedRows = {};  // day -> true when any input differs from originals
+    let loadSeq = 0;
+    let pendingQuickChanges = null;
+    let pendingQuickOpts = null;
+    let previewSeq = 0;
+
+    const MONTH_BTN_ACTIVE = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 transition-colors';
+    const MONTH_BTN_IDLE = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors';
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    const escapeAttr = escapeHtml;
+
+    function editedCount() { return Object.keys(editedRows).length; }
+
+    function updateSaveButton() {
+      const n = editedCount();
+      const btn = document.getElementById('saveAllBtn');
+      const discard = document.getElementById('discardBtn');
+      if (btn.dataset.saving === '1') return;
+      btn.disabled = n === 0;
+      btn.textContent = n === 0 ? 'No changes' : `Save changes (${n} ${n === 1 ? 'day' : 'days'})`;
+      discard.classList.toggle('hidden', n === 0);
+    }
+
+    function setActiveMonthButton(month) {
+      document.querySelectorAll('.month-btn').forEach(b => {
+        b.className = Number(b.dataset.month) === month ? MONTH_BTN_ACTIVE : MONTH_BTN_IDLE;
+      });
+    }
+
+    /** Runs `proceed` immediately when there are no unsaved edits, otherwise asks first. */
+    function confirmDiscardIfDirty(proceed, message) {
+      const n = editedCount();
+      if (n === 0) { proceed(); return; }
+      showConfirm('confirm-dialog', proceed, {
+        title: 'Discard unsaved changes?',
+        message: message || `You have unsaved edits on ${n} ${n === 1 ? 'day' : 'days'} in ${MONTH_NAMES[currentMonth]}. They will be lost.`,
+        confirmLabel: 'Discard changes',
+        variant: 'danger',
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      loadMonth(1);
+      setActiveMonthButton(currentMonth);
+      loadMonth(currentMonth);
 
       document.querySelectorAll('.month-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const month = parseInt(btn.dataset.month);
-          currentMonth = month;
-          document.querySelectorAll('.month-btn').forEach(b => {
-            b.className = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors';
+          if (month === currentMonth) return;
+          confirmDiscardIfDirty(() => {
+            currentMonth = month;
+            setActiveMonthButton(month);
+            loadMonth(month);
           });
-          btn.className = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 transition-colors';
-          loadMonth(month);
         });
       });
 
       document.getElementById('saveAllBtn').addEventListener('click', saveAll);
+      document.getElementById('discardBtn').addEventListener('click', () => {
+        confirmDiscardIfDirty(() => loadMonth(currentMonth));
+      });
+
+      // Live dirty tracking for inline edits
+      document.getElementById('tableContainer').addEventListener('input', (e) => {
+        const input = e.target;
+        if (input && input.dataset && input.dataset.day) refreshRowDirty(Number(input.dataset.day));
+      });
+
+      window.addEventListener('beforeunload', (e) => {
+        if (editedCount() > 0) {
+          e.preventDefault();
+          e.returnValue = '';
+        }
+      });
+
+      initQuickUpdate();
     });
 
     async function loadMonth(month) {
+      const seq = ++loadSeq;
       editedRows = {};
+      originals = {};
+      updateSaveButton();
       try {
         const response = await fetch(API_URL + '?month=' + month);
         if (!response.ok) {
-          const err = await response.json();
+          const err = await response.json().catch(() => ({}));
           throw new Error(err.error || 'Unknown error');
         }
-        items = await response.json();
+        const data = await response.json();
+        if (seq !== loadSeq) return; // a newer load superseded this one
+        items = data;
         renderTable();
       } catch (error) {
+        if (seq !== loadSeq) return;
         console.error('Error loading prayer times:', error);
         document.getElementById('tableContainer').innerHTML = `
           <div class="p-6">
@@ -99,12 +391,18 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
       }
     }
 
+    function rowBaseClass(day, existing) {
+      if (currentMonth === TODAY.month && day === TODAY.day) return 'bg-green-50';
+      if (!existing) return 'bg-amber-50/50';
+      return day % 2 === 0 ? 'bg-gray-50/50' : '';
+    }
+
     function renderTable() {
       const container = document.getElementById('tableContainer');
       const daysInMonth = DAYS_IN_MONTH[currentMonth];
 
       const byDay = {};
-      items.forEach(item => { byDay[item.day] = item; });
+      items.forEach(item => { byDay[Number(item.day)] = item; });
 
       let html = `
         <table class="w-full text-xs">
@@ -120,25 +418,25 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
 
       for (let day = 1; day <= daysInMonth; day++) {
         const existing = byDay[day];
-        const rowBg = existing ? '' : 'bg-amber-50/50';
-        const altBg = day % 2 === 0 ? 'bg-gray-50/50' : '';
+        const isToday = currentMonth === TODAY.month && day === TODAY.day;
+        originals[day] = {};
 
-        html += `<tr class="${existing ? altBg : rowBg}" data-day="${day}">`;
-        html += `<td class="px-3 py-1 font-medium text-gray-700 sticky left-0 bg-white z-10 whitespace-nowrap text-xs">${day}</td>`;
+        html += `<tr class="${rowBaseClass(day, existing)}" data-day="${day}"${isToday ? ' aria-current="date"' : ''}>`;
+        html += `<td class="px-3 py-1 font-medium sticky left-0 z-10 whitespace-nowrap text-xs ${isToday ? 'bg-green-50 text-green-800 border-l-2 border-green-500' : 'bg-white text-gray-700'}">${day}${isToday ? ' <span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-green-700">Today</span>' : ''}</td>`;
 
         PRAYER_FIELDS.forEach(f => {
           const value = existing ? (existing[f.key] || '') : '';
+          originals[day][f.key] = value;
           html += `<td class="px-0 py-0">
             <input type="text" data-day="${day}" data-field="${f.key}"
               value="${escapeAttr(value)}"
               class="w-full px-1 py-1 text-center text-xs border-0 bg-transparent focus:ring-1 focus:ring-blue-500 focus:bg-white focus:outline-none"
-              style="min-width: 60px;"
-              onchange="markEdited(${day})" />
+              style="min-width: 60px;" />
           </td>`;
         });
 
         html += `<td class="px-1 py-1 text-center">
-          ${existing ? `<button onclick="deleteRow('${existing.id}')" class="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete">
+          ${existing ? `<button type="button" onclick="deleteRow('${escapeAttr(existing.id)}')" class="p-1 rounded text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
           </button>` : ''}
         </td>`;
@@ -147,21 +445,27 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
 
       html += `</tbody></table>`;
       container.innerHTML = html;
+      updateSaveButton();
     }
 
-    function escapeAttr(text) {
-      if (!text) return '';
-      return text.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
+    function refreshRowDirty(day) {
+      const orig = originals[day] || {};
+      let dirty = false;
+      document.querySelectorAll(`input[data-day="${day}"]`).forEach(input => {
+        if (input.value !== (orig[input.dataset.field] ?? '')) dirty = true;
+      });
+      if (dirty) editedRows[day] = true; else delete editedRows[day];
 
-    window.markEdited = function(day) {
-      editedRows[day] = true;
       const row = document.querySelector(`tr[data-day="${day}"]`);
       if (row) {
-        row.classList.remove('bg-gray-50/50');
-        row.classList.add('bg-blue-50/50');
+        const existing = items.some(i => Number(i.day) === day);
+        row.className = dirty ? 'bg-blue-50/50' : rowBaseClass(day, existing);
       }
-    };
+      updateSaveButton();
+    }
+
+    // Kept for backwards compatibility with any inline handlers
+    window.markEdited = refreshRowDirty;
 
     async function saveAll() {
       const editedDays = Object.keys(editedRows).map(Number);
@@ -189,6 +493,7 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
       }
 
       const btn = document.getElementById('saveAllBtn');
+      btn.dataset.saving = '1';
       btn.textContent = 'Saving...';
       btn.disabled = true;
 
@@ -200,19 +505,21 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
         });
         const result = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(result.error || 'Failed to save');
-        showToast(`Saved ${result.count} prayer time(s)`, 'success');
+        showToast(`Saved ${escapeHtml(result.count ?? records.length)} prayer time(s)`, 'success');
         editedRows = {};
+        delete btn.dataset.saving;
+        closePreview(); // its snapshot predates this save
         await loadMonth(currentMonth);
       } catch (e) {
-        showToast('Error: ' + e.message, 'error');
+        showToast('Error: ' + escapeHtml(e.message), 'error');
       } finally {
-        btn.textContent = 'Save Month';
-        btn.disabled = false;
+        delete btn.dataset.saving;
+        updateSaveButton();
       }
     }
 
     window.deleteRow = function(id) {
-      showConfirm('confirm-dialog', async () => {
+      const doDelete = () => showConfirm('confirm-dialog', async () => {
         try {
           const res = await fetch(API_URL, {
             method: 'DELETE',
@@ -222,8 +529,241 @@ import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
           if (!res.ok) throw new Error('Failed to delete');
           showToast('Entry deleted', 'success');
           await loadMonth(currentMonth);
-        } catch (e) { showToast('Error: ' + e.message, 'error'); }
+        } catch (e) { showToast('Error: ' + escapeHtml(e.message), 'error'); }
       }, { title: 'Delete Entry', message: 'This prayer time entry will be removed.' });
+
+      const n = editedCount();
+      if (n > 0) {
+        // Deleting reloads the month, which would drop other unsaved edits
+        confirmDiscardIfDirty(() => setTimeout(doDelete, 0),
+          `Deleting reloads ${MONTH_NAMES[currentMonth]}, so your unsaved edits on ${n} ${n === 1 ? 'day' : 'days'} will be lost.`);
+      } else {
+        doDelete();
+      }
     };
+
+    // ---------- Quick update ----------
+
+    function fillDaySelect(selectId, month, preferredDay) {
+      const sel = document.getElementById(selectId);
+      const max = DAYS_IN_MONTH[month];
+      const keep = Math.min(preferredDay || Number(sel.value) || 1, max);
+      let html = '';
+      for (let d = 1; d <= max; d++) html += `<option value="${d}">${d}</option>`;
+      sel.innerHTML = html;
+      sel.value = String(keep);
+    }
+
+    function readQuickOptions() {
+      const mode = (document.querySelector('input[name="quMode"]:checked') || {}).value;
+      const minutesRaw = document.getElementById('quMinutes').value.trim();
+      return {
+        prayer: document.getElementById('quPrayer').value,
+        from: { month: Number(document.getElementById('quFromMonth').value), day: Number(document.getElementById('quFromDay').value) },
+        to: { month: Number(document.getElementById('quToMonth').value), day: Number(document.getElementById('quToDay').value) },
+        mode,
+        time: timeInputToDisplay(document.getElementById('quTime').value),
+        minutes: minutesRaw === '' ? NaN : Number(minutesRaw),
+      };
+    }
+
+    function updateRangeHint() {
+      const o = readQuickOptions();
+      const hint = document.getElementById('quRangeHint');
+      if (!isValidMonthDay(o.from.month, o.from.day) || !isValidMonthDay(o.to.month, o.to.day)) { hint.textContent = ''; return; }
+      const count = expandDateRange(o.from, o.to).length;
+      const days = `${count} ${count === 1 ? 'day' : 'days'}`;
+      if (wrapsYearEnd(o.from, o.to)) {
+        hint.innerHTML = `<span class="font-medium text-amber-700">Wraps over the year end:</span> ${formatMonthDay(o.from)} → Dec 31, then Jan 1 → ${formatMonthDay(o.to)} (${days}).`;
+      } else {
+        hint.textContent = `${formatMonthDay(o.from)} → ${formatMonthDay(o.to)} (${days}). If "To" is before "From", the range wraps over Dec 31.`;
+      }
+    }
+
+    function showQuickError(msg) {
+      const el = document.getElementById('quError');
+      el.textContent = msg || '';
+      el.classList.toggle('hidden', !msg);
+    }
+
+    function closePreview() {
+      pendingQuickChanges = null;
+      pendingQuickOpts = null;
+      previewSeq++; // drop any preview still loading
+      const box = document.getElementById('quPreview');
+      box.innerHTML = '';
+      box.classList.add('hidden');
+    }
+
+    function initQuickUpdate() {
+      const lastDay = DAYS_IN_MONTH[TODAY.month];
+      document.getElementById('quFromMonth').value = String(TODAY.month);
+      document.getElementById('quToMonth').value = String(TODAY.month);
+      fillDaySelect('quFromDay', TODAY.month, Math.min(TODAY.day, lastDay));
+      fillDaySelect('quToDay', TODAY.month, lastDay);
+
+      document.getElementById('quFromMonth').addEventListener('change', (e) => fillDaySelect('quFromDay', Number(e.target.value)));
+      document.getElementById('quToMonth').addEventListener('change', (e) => fillDaySelect('quToDay', Number(e.target.value)));
+
+      // Any option change invalidates an open preview. (Validation errors are left in place until the
+      // next Preview click: clearing them on blur shifts the button under the cursor mid-click.)
+      ['quPrayer', 'quFromMonth', 'quFromDay', 'quToMonth', 'quToDay', 'quTime', 'quMinutes'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('change', () => { updateRangeHint(); closePreview(); });
+        el.addEventListener('input', () => { closePreview(); });
+      });
+      document.querySelectorAll('input[name="quMode"]').forEach(r => r.addEventListener('change', () => { closePreview(); }));
+      // Focusing a mode's input selects that mode
+      document.getElementById('quTime').addEventListener('focus', () => { document.querySelector('input[name="quMode"][value="fixed"]').checked = true; });
+      document.getElementById('quMinutes').addEventListener('focus', () => { document.querySelector('input[name="quMode"][value="offset"]').checked = true; });
+
+      document.getElementById('quPreviewBtn').addEventListener('click', () => {
+        const n = editedCount();
+        if (n > 0) {
+          confirmDiscardIfDirty(async () => { await loadMonth(currentMonth); previewQuickUpdate(); },
+            `You have unsaved edits on ${n} ${n === 1 ? 'day' : 'days'} in ${MONTH_NAMES[currentMonth]}. Save them first, or discard them to continue with the quick update.`);
+          return;
+        }
+        previewQuickUpdate();
+      });
+
+      updateRangeHint();
+    }
+
+    async function previewQuickUpdate() {
+      closePreview();
+      const opts = readQuickOptions();
+      const error = validateQuickUpdate(opts);
+      if (error) { showQuickError(error); return; }
+      showQuickError('');
+
+      const seq = previewSeq;
+      const btn = document.getElementById('quPreviewBtn');
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+      let records;
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not load prayer times');
+        records = data;
+      } catch (e) {
+        showQuickError('Could not load prayer times: ' + e.message);
+        return;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Preview changes';
+      }
+
+      if (seq !== previewSeq) return; // options changed while loading
+      const result = computeQuickUpdate(records, opts);
+      pendingQuickChanges = result.changes.map(c => c.record);
+      pendingQuickOpts = opts;
+      renderPreview(opts, result);
+    }
+
+    function changeSignature(changes) {
+      return changes.map(c => `${c.month}-${c.day}=${c.newValue}`).join('|');
+    }
+
+    function renderPreview(opts, result) {
+      const box = document.getElementById('quPreview');
+      const prayerLabel = opts.prayer.charAt(0).toUpperCase() + opts.prayer.slice(1);
+      const how = opts.mode === 'fixed' ? `set to ${opts.time}` : `${opts.minutes} min after start time`;
+      const range = `${formatMonthDay(opts.from)} → ${formatMonthDay(opts.to)}${wrapsYearEnd(opts.from, opts.to) ? ' (wraps over year end)' : ''}`;
+      const n = result.changes.length;
+      const warnCount = result.changes.filter(c => c.warning).length;
+
+      let html = `<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900">${n} ${n === 1 ? 'day' : 'days'} will change</h3>
+          <p class="text-xs text-gray-500">${escapeHtml(prayerLabel)} Jamah ${escapeHtml(how)} · ${escapeHtml(range)} · ${result.dates.length} days in range, ${result.unchangedCount} already match</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button id="quCancelBtn" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+          ${n > 0 ? `<button id="quApplyBtn" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed">Apply &amp; save (${n})</button>` : ''}
+        </div>
+      </div>`;
+
+      const notes = [];
+      if (warnCount > 0) notes.push(`<p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">${warnCount} ${warnCount === 1 ? 'day has' : 'days have'} a warning below. Check them before saving.</p>`);
+      if (result.missing.length) notes.push(`<p class="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">${result.missing.length} ${result.missing.length === 1 ? 'day has' : 'days have'} no prayer times yet and will be skipped: ${escapeHtml(result.missing.map(formatMonthDay).join(', '))}.</p>`);
+      if (result.unreadable.length) notes.push(`<p class="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">${result.unreadable.length} ${result.unreadable.length === 1 ? 'day has' : 'days have'} a missing or unreadable ${escapeHtml(prayerLabel)} start time and will be skipped: ${escapeHtml(result.unreadable.map(formatMonthDay).join(', '))}.</p>`);
+      if (notes.length) html += `<div class="space-y-2 mb-3">${notes.join('')}</div>`;
+
+      if (n > 0) {
+        html += `<div class="max-h-80 overflow-auto border border-gray-200 rounded-lg">
+          <table class="w-full text-xs">
+            <thead class="sticky top-0 bg-white">
+              <tr class="border-b border-gray-200">
+                <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider">Start</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider">Jamah</th>
+                <th class="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wider">Note</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${result.changes.map(c => `<tr class="${c.warning ? 'bg-amber-50' : ''}">
+                <td class="px-3 py-1.5 font-medium text-gray-700 whitespace-nowrap">${escapeHtml(formatMonthDay(c))}</td>
+                <td class="px-3 py-1.5 text-gray-500 whitespace-nowrap">${escapeHtml(c.begins || '—')}</td>
+                <td class="px-3 py-1.5 whitespace-nowrap"><span class="text-gray-400 line-through">${escapeHtml(c.oldValue || '(empty)')}</span> <span class="text-gray-400">→</span> <span class="font-semibold text-gray-900">${escapeHtml(c.newValue)}</span></td>
+                <td class="px-3 py-1.5 text-amber-800">${c.warning ? escapeHtml(c.warning) : ''}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+      } else {
+        html += `<p class="text-sm text-gray-500">Nothing to change for this range.</p>`;
+      }
+
+      box.innerHTML = html;
+      box.classList.remove('hidden');
+      document.getElementById('quCancelBtn').addEventListener('click', closePreview);
+      const apply = document.getElementById('quApplyBtn');
+      if (apply) apply.addEventListener('click', applyQuickUpdate);
+    }
+
+    async function applyQuickUpdate() {
+      if (!pendingQuickChanges || pendingQuickChanges.length === 0) return;
+      if (editedCount() > 0) {
+        showToast('Save or discard your inline edits before applying a quick update.', 'warning');
+        return;
+      }
+      const opts = pendingQuickOpts;
+      const previewed = pendingQuickChanges;
+      const btn = document.getElementById('quApplyBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      try {
+        // Rebuild from fresh data so edits saved since the preview aren't overwritten by the snapshot
+        const freshRes = await fetch(API_URL);
+        const fresh = await freshRes.json().catch(() => ({}));
+        if (!freshRes.ok) throw new Error(fresh.error || 'Could not load prayer times');
+        const recomputed = computeQuickUpdate(fresh, opts);
+        const previewedSig = changeSignature(previewed.map(r => ({ month: r.month, day: r.day, newValue: r[`${opts.prayer}Jamah`] })));
+        if (changeSignature(recomputed.changes) !== previewedSig) {
+          pendingQuickChanges = recomputed.changes.map(c => c.record);
+          pendingQuickOpts = opts;
+          renderPreview(opts, recomputed);
+          showToast('Prayer times changed since the preview. Check the updated list and apply again.', 'warning');
+          return;
+        }
+        const records = recomputed.changes.map(c => c.record);
+        const res = await fetch(API_URL + '?bulk=true', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(records)
+        });
+        const result = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(result.error || 'Failed to save');
+        showToast(`Quick update saved: ${escapeHtml(result.count ?? records.length)} day(s) updated`, 'success');
+        closePreview();
+        await loadMonth(currentMonth);
+      } catch (e) {
+        showToast('Error: ' + escapeHtml(e.message), 'error');
+        btn.disabled = false;
+        btn.textContent = `Apply & save (${previewed.length})`;
+      }
+    }
   </script>
 </AdminLayout2>

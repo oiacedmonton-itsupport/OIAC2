@@ -1,15 +1,15 @@
 {
   "month": 2,
   "day": 17,
-  "fajrBegins": "05:51 AM",
-  "fajrJamah": "06:30 AM",
-  "sunrise": "07:49 AM",
-  "zuhrBegins": "12:50 PM",
-  "zuhrJamah": "01:00 PM",
-  "asrBegins": "03:17 PM",
-  "asrJamah": "04:00 PM",
-  "maghribBegins": "05:50 PM",
-  "maghribJamah": "05:55 PM",
-  "ishaBegins": "07:40 PM",
-  "ishaJamah": "07:45 PM"
+  "fajrBegins": "06:51 AM",
+  "fajrJamah": "07:30 AM",
+  "sunrise": "08:49 AM",
+  "zuhrBegins": "01:50 PM",
+  "zuhrJamah": "02:00 PM",
+  "asrBegins": "04:17 PM",
+  "asrJamah": "05:00 PM",
+  "maghribBegins": "06:50 PM",
+  "maghribJamah": "06:55 PM",
+  "ishaBegins": "08:40 PM",
+  "ishaJamah": "08:45 PM"
 }

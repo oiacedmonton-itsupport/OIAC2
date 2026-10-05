@@ -1,4 +1,5 @@
 import { getJummahTimesFromDB, getPrayerTimeByDay, getPrayerTimesByMonth } from '../db';
+import { EDMONTON_TIME_ZONE } from '../../helper';
 
 // 2026 timetable the DB was seeded from (see api/cms/seed-prayer-times.ts); bundled so it works when the DB is down
 const fallbackPrayerTimes = Object.values(
@@ -30,9 +31,9 @@ export type JummahTime = {
 };
 
 // The server runs in UTC, so using `new Date()` directly would return
-// the wrong date for Edmonton users after ~5–7pm MST/MDT.
+// the wrong date for Edmonton users after ~6pm Edmonton time (UTC-6).
 function getEdmontonMonthAndDay(): { month: number; day: number } {
-  const edmontonDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Edmonton' }); // "YYYY-MM-DD"
+  const edmontonDateStr = new Date().toLocaleDateString('en-CA', { timeZone: EDMONTON_TIME_ZONE }); // "YYYY-MM-DD"
   const [, monthStr, dayStr] = edmontonDateStr.split('-');
   return { month: parseInt(monthStr, 10), day: parseInt(dayStr, 10) };
 }
