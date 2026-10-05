@@ -1008,8 +1008,8 @@ export async function bulkUpsertPrayerTimes(records: PrayerTimeInput[]): Promise
       .from('oiac_prayer_times')
       .upsert(batch, { onConflict: 'month,day' });
 
-    if (!error) success += batch.length;
-    else console.error('Bulk upsert error at batch', i, error);
+    if (error) throw error;
+    success += batch.length;
   }
   return success;
 }
