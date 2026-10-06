@@ -1,13 +1,20 @@
 ---
 import AdminLayout2 from '../../layouts/AdminLayout2.astro';
 import AdminPageHeader from '../../components/admin/AdminPageHeader.astro';
+import { Download } from '@lucide/astro';
+import oiacLogo from '../../assets/OIAC.Logo.Dark.png';
 
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const inputClass = 'px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
 ---
 
 <AdminLayout2 title="Prayer Times" currentPage="prayer-times">
   <AdminPageHeader title="Prayer Times" description="Manage daily prayer times for the entire year">
+    <button id="downloadBtn" type="button" aria-haspopup="dialog" aria-controls="downloadDialog" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+      <Download size={16} aria-hidden="true" />
+      Download
+    </button>
     <button id="discardBtn" type="button" class="hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
       Discard
     </button>
@@ -104,6 +111,69 @@ const inputClass = 'px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white
       <p class="text-gray-500 text-sm p-6">Loading...</p>
     </div>
   </div>
+
+  <!-- Download dialog (wired up by the bundled <script> at the bottom of this file) -->
+  <dialog id="downloadDialog" aria-labelledby="dlTitle" data-logo-src={oiacLogo.src}
+    class="m-auto w-[calc(100%-2rem)] max-w-md rounded-xl border border-gray-200 bg-white p-0 shadow-xl backdrop:bg-gray-900/40">
+    <form id="dlForm" method="dialog" class="p-6">
+      <div class="flex items-start justify-between gap-4 mb-4">
+        <div>
+          <h2 id="dlTitle" class="text-lg font-semibold text-gray-900">Download prayer times</h2>
+          <p class="mt-0.5 text-xs text-gray-500">Uses the latest saved times from the database.</p>
+        </div>
+        <button type="button" data-dl-close aria-label="Close" class="p-1 -mr-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <p id="dlUnsaved" class="hidden mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"></p>
+
+      <fieldset class="mb-4">
+        <legend class="block text-xs font-medium text-gray-700 mb-2">Format</legend>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input type="radio" name="dlFormat" value="xlsx" checked class="text-blue-600 focus:ring-blue-500" />
+            Spreadsheet (.xlsx)
+          </label>
+          <label class="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+            <input type="radio" name="dlFormat" value="png" class="text-blue-600 focus:ring-blue-500" />
+            Image (.png)
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="mb-2">
+        <legend class="block text-xs font-medium text-gray-700 mb-2">Range</legend>
+        <div class="space-y-2">
+          <div class="flex items-center gap-3">
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input type="radio" name="dlRange" value="month" checked class="text-blue-600 focus:ring-blue-500" />
+              Month
+            </label>
+            <select id="dlMonth" aria-label="Month to download" class={inputClass}>
+              {MONTH_NAMES.map((m, i) => <option value={i + 1}>{m}</option>)}
+            </select>
+          </div>
+          <label id="dlYearLabel" class="flex items-center gap-2 text-sm text-gray-700 has-[:disabled]:text-gray-400">
+            <input type="radio" name="dlRange" value="year" aria-describedby="dlYearHint" class="text-blue-600 focus:ring-blue-500 disabled:opacity-50" />
+            Full year <span class="text-xs text-gray-500">(one sheet per month)</span>
+          </label>
+          <p id="dlYearHint" class="hidden text-xs text-gray-500 pl-6">Images cover one month at a time. Choose Spreadsheet for the full year.</p>
+        </div>
+      </fieldset>
+
+      <p id="dlError" role="alert" class="hidden mt-3 text-sm text-red-600"></p>
+
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" data-dl-close class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button id="dlSubmit" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+          Download
+        </button>
+      </div>
+    </form>
+  </dialog>
 
   <script is:inline>
     // ---- PURE LOGIC START (no DOM access; unit-testable) ----
@@ -284,6 +354,12 @@ const inputClass = 'px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white
     let pendingQuickChanges = null;
     let pendingQuickOpts = null;
     let previewSeq = 0;
+
+    // Read-only hooks for the bundled download script below (it fetches its own data)
+    window.prayerTimesAdmin = {
+      getCurrentMonth: () => currentMonth,
+      getUnsavedCount: () => editedCount(),
+    };
 
     const MONTH_BTN_ACTIVE = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-50 text-blue-700 transition-colors';
     const MONTH_BTN_IDLE = 'month-btn px-3 py-1.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors';
@@ -765,5 +841,98 @@ const inputClass = 'px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white
         btn.textContent = `Apply & save (${previewed.length})`;
       }
     }
+  </script>
+
+  <script>
+    // write-excel-file is loaded lazily inside createXlsxBlob, so it isn't part of the initial page bundle
+    import { currentEdmontonYear, exportYearForMonth, buildMonthRows, exportFilename, fetchPrayerTimes, downloadBlob, createXlsxBlob, createImageBlob, MONTH_NAMES } from '../../lib/prayer-times-export';
+
+    type AdminHooks = { getCurrentMonth: () => number; getUnsavedCount: () => number };
+    const hooks = () => (window as unknown as { prayerTimesAdmin?: AdminHooks }).prayerTimesAdmin;
+
+    const dialog = document.getElementById('downloadDialog') as HTMLDialogElement;
+    const form = document.getElementById('dlForm') as HTMLFormElement;
+    const openBtn = document.getElementById('downloadBtn') as HTMLButtonElement;
+    const monthSel = document.getElementById('dlMonth') as HTMLSelectElement;
+    const yearRadio = form.querySelector<HTMLInputElement>('input[name="dlRange"][value="year"]')!;
+    const monthRadio = form.querySelector<HTMLInputElement>('input[name="dlRange"][value="month"]')!;
+    const yearHint = document.getElementById('dlYearHint')!;
+    const unsavedNote = document.getElementById('dlUnsaved')!;
+    const errorEl = document.getElementById('dlError')!;
+    const submitBtn = document.getElementById('dlSubmit') as HTMLButtonElement;
+    let busy = false;
+
+    const format = () => (form.querySelector<HTMLInputElement>('input[name="dlFormat"]:checked')?.value === 'png' ? 'png' : 'xlsx');
+
+    function showError(msg: string) {
+      errorEl.textContent = msg;
+      errorEl.classList.toggle('hidden', !msg);
+    }
+
+    function syncRange() {
+      const isImage = format() === 'png';
+      yearRadio.disabled = isImage;
+      if (isImage && yearRadio.checked) monthRadio.checked = true;
+      yearHint.classList.toggle('hidden', !isImage);
+      monthSel.disabled = yearRadio.checked;
+    }
+
+    openBtn.addEventListener('click', () => {
+      const h = hooks();
+      monthSel.value = String(h?.getCurrentMonth() ?? new Date().getMonth() + 1);
+      const n = h?.getUnsavedCount() ?? 0;
+      unsavedNote.textContent = n > 0
+        ? `You have unsaved edits on ${n} ${n === 1 ? 'day' : 'days'}. Downloads include saved prayer times only.`
+        : '';
+      unsavedNote.classList.toggle('hidden', n === 0);
+      showError('');
+      syncRange();
+      dialog.showModal();
+    });
+
+    form.addEventListener('change', syncRange);
+    dialog.querySelectorAll('[data-dl-close]').forEach(b => b.addEventListener('click', () => { if (!busy) dialog.close(); }));
+    // Clicking the backdrop closes the dialog
+    dialog.addEventListener('click', (e) => { if (e.target === dialog && !busy) dialog.close(); });
+    dialog.addEventListener('cancel', (e) => { if (busy) e.preventDefault(); });
+    dialog.addEventListener('close', () => openBtn.focus());
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (busy) return;
+      const fmt = format();
+      const month = fmt === 'xlsx' && yearRadio.checked ? null : Number(monthSel.value);
+      const year = month === null ? currentEdmontonYear() : exportYearForMonth(month);
+
+      busy = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Preparing...';
+      showError('');
+      try {
+        const records = await fetchPrayerTimes(month);
+        const months = month === null ? Array.from({ length: 12 }, (_, i) => i + 1) : [month];
+        const missingDays = months.reduce((n, m) => n + buildMonthRows(records, m, year).filter(r => r.missing).length, 0);
+        const blob = fmt === 'xlsx'
+          ? await createXlsxBlob(records, year, month)
+          : await createImageBlob(records, year, month as number, dialog.dataset.logoSrc || '');
+        downloadBlob(blob, exportFilename(year, month, fmt));
+        busy = false;
+        dialog.close();
+        const what = month === null ? `${year} full year` : `${MONTH_NAMES[month - 1]} ${year}`;
+        const toast = (window as unknown as { showToast?: (m: string, t?: string) => void }).showToast;
+        if (missingDays > 0) {
+          toast?.(`Downloaded ${what} prayer times — ${missingDays} ${missingDays === 1 ? 'day has' : 'days have'} no saved times`, 'warning');
+        } else {
+          toast?.(`Downloaded ${what} prayer times`, 'success');
+        }
+      } catch (err) {
+        console.error('Prayer times download failed:', err);
+        showError('Download failed: ' + (err instanceof Error ? err.message : String(err)));
+      } finally {
+        busy = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Download';
+      }
+    });
   </script>
 </AdminLayout2>

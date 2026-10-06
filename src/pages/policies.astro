@@ -1,0 +1,79 @@
+---
+import OIACLayout from "../layouts/oiac-layout.astro"
+
+const policies = [
+  {
+    id: "adhan-iqamah-microphone",
+    title: "Masjid Adhan, Iqamah & Microphone Policy",
+    summary:
+      "Explains who may give the Adhan and Iqamah, including Jumu'ah, Ramadan and Taraweeh, how Mu'adhdhins are approved, and how the microphone may be used. The general rule: please ask before using the microphone.",
+    file: "/policies/adhan-iqamah-microphone-policy.pdf",
+    pages: 4,
+  },
+  {
+    id: "prayer-area-usage",
+    title: "Masjid Prayer Area Usage & Student Supervision Policy",
+    summary:
+      "Sets out expectations for the prayer area: students are welcome for Salah but must be supervised by a parent, the prayer area is not a play area, and food and cleanliness guidelines apply.",
+    file: "/policies/masjid-prayer-area-usage-policy.pdf",
+    pages: 6,
+  },
+]
+---
+<OIACLayout title="OIAC - Masjid Policies">
+  <div class="px-4 p-2 md:px-8 md:py-2 mx-auto">
+    <div class="container mt-5 mb-10 md:mb-24 bg-softBeige-lighter rounded-lg text-gray-950">
+      <h1 class="text-2xl md:text-4xl font-black my-5 text-terracottaRed-darker px-5 pt-5">Masjid Policies</h1>
+      <div class="container mx-auto px-4 pb-8">
+        <p class="mb-4 max-w-3xl">
+          These policies help us keep the masjid a welcoming, orderly place of worship for everyone. Please read them and share them with your family.
+        </p>
+
+        <nav aria-label="Policies" class="mb-8">
+          <ul class="flex flex-col gap-2">
+            {policies.map((p) => (
+              <li>
+                <a href={`#${p.id}`} class="text-terracottaRed-darker font-semibold underline underline-offset-2 hover:text-terracottaRed focus:outline-none focus-visible:ring-2 focus-visible:ring-terracottaRed rounded">
+                  {p.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div class="flex flex-col gap-8">
+          {policies.map((p) => (
+            <section id={p.id} aria-labelledby={`${p.id}-title`} class="scroll-mt-24 bg-white rounded-lg border border-terracottaRed/20 p-4 md:p-6">
+              <h2 id={`${p.id}-title`} class="text-xl md:text-2xl font-bold mb-2 text-terracottaRed-darker">{p.title}</h2>
+              <p class="mb-1 max-w-3xl">{p.summary}</p>
+              <p class="text-sm text-gray-700 mb-4">PDF, {p.pages} pages</p>
+              <div class="flex flex-wrap gap-3">
+                <a
+                  href={p.file}
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-block bg-terracottaRed-darker text-white font-bold px-4 py-2 rounded-lg hover:bg-terracottaRed transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-terracottaRed"
+                >
+                  Open PDF<span class="sr-only"> (opens in a new tab): {p.title}</span>
+                </a>
+                <a
+                  href={p.file}
+                  download
+                  class="inline-block border-2 border-terracottaRed-darker text-terracottaRed-darker font-bold px-4 py-2 rounded-lg hover:bg-terracottaRed-darker hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-terracottaRed"
+                >
+                  Download<span class="sr-only"> PDF: {p.title}</span>
+                </a>
+              </div>
+              <iframe
+                src={`${p.file}#view=FitH`}
+                title={p.title}
+                loading="lazy"
+                class="hidden md:block w-full h-[80vh] mt-5 rounded-lg border border-gray-300"
+              ></iframe>
+            </section>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</OIACLayout>

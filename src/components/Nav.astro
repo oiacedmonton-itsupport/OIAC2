@@ -267,6 +267,16 @@ const currentPath = Astro.url.pathname;
 
         <div class="border-r border-terracottaRed/30 pl-2 lg:pl-2.5 xl:pl-3 pr-2 lg:pr-2.5 xl:pr-3">
           <a
+            href="/policies"
+            class={`hover:text-terracottaRed-darker transition-colors ${currentPath === "/policies" ? "text-terracottaRed-darker" : ""}`}
+            role="menuitem"
+          >
+            Policies
+          </a>
+        </div>
+
+        <div class="border-r border-terracottaRed/30 pl-2 lg:pl-2.5 xl:pl-3 pr-2 lg:pr-2.5 xl:pr-3">
+          <a
             href="/privacypolicy"
             class={`hover:text-terracottaRed-darker transition-colors ${currentPath === "/privacypolicy" ? "text-terracottaRed-darker" : ""}`}
             role="menuitem"
@@ -392,6 +402,13 @@ const currentPath = Astro.url.pathname;
         <sup class="text-[8px] bg-yellow-500 text-yellow-900 rounded-lg px-1 ml-1">
           New
         </sup>
+      </a>
+      <a
+        href="/policies"
+        class={`block py-3 px-4 rounded-lg hover:bg-softBeige-lighter transition-colors font-bold ${currentPath === "/policies" ? "bg-terracottaRed/10 text-terracottaRed-darker" : "text-terracottaRed"}`}
+        role="menuitem"
+      >
+        Policies
       </a>
       <a
         href="/privacypolicy"
